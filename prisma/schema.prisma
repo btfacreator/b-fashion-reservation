@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Reservation {
+  id           String    @id @default(cuid())
+  name         String
+  phone        String
+  affiliation  String
+  email        String
+  visitDate    DateTime
+  visitTime    String
+  request      String?
+  transport    String    @default("walk")
+  carNumber    String?
+  status       String    @default("pending")
+  visitOutcome String?   // null | "visited" | "no_show"
+  approvedAt   DateTime?
+  memo         String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([visitDate])
+  @@index([status])
+  @@index([visitOutcome])
+}
+
+model BlockedSlot {
+  id        String   @id @default(cuid())
+  date      DateTime
+  time      String?
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@index([date])
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
