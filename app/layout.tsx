@@ -1,13 +1,5 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Cormorant_Garamond } from 'next/font/google';
-
-const cormorant = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-display',
-  display: 'swap',
-});
 
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
 const SITE_NAME = process.env.SITE_NAME || 'B.Fashion ShowRoom';
@@ -35,7 +27,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" className={cormorant.variable}>
+    <html lang="ko">
       <head>
         <link
           rel="stylesheet"
