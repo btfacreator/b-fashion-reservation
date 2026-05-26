@@ -68,12 +68,11 @@ export default async function SuccessPage({
           <div className="w-12 h-0.5 mx-auto mb-6" style={{ background: BLUE }} />
 
           <div className="text-base text-slate-700 leading-relaxed space-y-2 mb-8">
-            <p>입력하신 이메일로 신청 접수 안내가 발송되었습니다.</p>
             <p className="font-bold" style={{ color: BLUE }}>
-              관리자 검토 후 확정 메일이 별도로 발송됩니다.
+              관리자 검토 후 확정 안내 메일이 발송됩니다.
             </p>
             <p className="text-sm text-slate-600 pt-2">
-              영업일 기준 1~2일 내에 안내드리며,<br />
+              영업일 기준 1~2일 내에 입력하신 이메일로 안내드리며,<br />
               메일이 도착하지 않으면 스팸함을 확인해 주세요.
             </p>
           </div>

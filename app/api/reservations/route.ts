@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { isValidTimeSlot } from '@/lib/time-slots';
 import { isClosedDay, parseDateString } from '@/lib/holidays';
-import { sendSubmissionAck, sendAdminNotification } from '@/lib/email';
+import { sendAdminNotification } from '@/lib/email';
 import { isAuthenticated } from '@/lib/auth';
 import { getBookingWindow, addDaysUTC } from '@/lib/settings';
 
@@ -95,10 +95,10 @@ export async function POST(req: NextRequest) {
       });
     });
 
-    Promise.all([
-      sendSubmissionAck(reservation),
-      sendAdminNotification(reservation),
-    ]).catch((err) => console.error('[reservations] email send failed:', err));
+    // 신청 접수 시 관리자에게만 알림. 신청자는 승인/취소 시점에 메일 받음
+    sendAdminNotification(reservation).catch((err) =>
+      console.error('[reservations] admin notification failed:', err),
+    );
 
     return NextResponse.json({ id: reservation.id });
   } catch (err) {
