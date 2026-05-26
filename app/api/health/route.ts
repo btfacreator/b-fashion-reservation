@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   const checks = {
     db: false,
-    email: !!process.env.RESEND_API_KEY,
+    email: !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD),
   };
 
   try {
