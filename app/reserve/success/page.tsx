@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { prisma } from '@/lib/db';
+import { formatTimeLabel } from '@/lib/time-slots';
 
 const BLUE = '#1E3A8A';
 const MAGENTA = '#D946EF';
@@ -6,7 +8,36 @@ const MAGENTA = '#D946EF';
 const CONTACT_PHONE = '070-4820-3414';
 const CONTACT_EMAIL = 'ksmin3874@fabiz.ktbizoffice.com';
 
-export default function SuccessPage({ searchParams }: { searchParams: { id?: string } }) {
+export const dynamic = 'force-dynamic';
+
+function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+    timeZone: 'UTC',
+  }).format(date);
+}
+
+export default async function SuccessPage({
+  searchParams,
+}: {
+  searchParams: { id?: string };
+}) {
+  const reservation = searchParams.id
+    ? await prisma.reservation.findUnique({
+        where: { id: searchParams.id },
+        select: {
+          name: true,
+          visitDate: true,
+          visitTime: true,
+          transport: true,
+          carNumber: true,
+        },
+      })
+    : null;
+
   return (
     <main className="min-h-screen bg-white flex flex-col">
       <header className="border-b border-slate-200">
@@ -47,16 +78,43 @@ export default function SuccessPage({ searchParams }: { searchParams: { id?: str
             </p>
           </div>
 
-          {searchParams.id && (
-            <div className="inline-block px-5 py-3 bg-slate-50 border border-slate-200 rounded mb-8">
-              <p className="text-xs text-slate-500 mb-1 font-semibold">신청 번호</p>
-              <p className="text-sm font-mono" style={{ color: BLUE }}>
-                {searchParams.id}
+          {/* 신청 내역 요약 */}
+          {reservation && (
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-5 mb-8 text-left">
+              <p className="text-xs font-bold mb-3 text-center" style={{ color: BLUE }}>
+                ✓ 신청 내역
+              </p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">신청자</span>
+                  <span className="font-bold text-slate-900">{reservation.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">방문 일자</span>
+                  <span className="font-bold text-slate-900">{formatDate(reservation.visitDate)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">방문 시간</span>
+                  <span className="font-bold" style={{ color: BLUE }}>
+                    {formatTimeLabel(reservation.visitTime)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">이동수단</span>
+                  <span className="font-bold text-slate-900">
+                    {reservation.transport === 'car'
+                      ? `🚗 차량 (${reservation.carNumber || ''})`
+                      : '🚶 도보'}
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-slate-500 mt-4 pt-3 border-t border-slate-200 text-center">
+                문의 시 <strong>이름과 방문 일자</strong>를 알려주세요.
               </p>
             </div>
           )}
 
-          {/* Contact box */}
+          {/* 문의처 */}
           <div
             className="mb-8 p-5 rounded-lg border-2 text-left"
             style={{ borderColor: MAGENTA, background: '#fdf4ff' }}

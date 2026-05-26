@@ -126,37 +126,6 @@ export default function ReservationForm() {
           </p>
         </div>
 
-        {/* Contact Info Banner */}
-        <div
-          className="mb-10 p-5 rounded-lg border-2 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between"
-          style={{ borderColor: MAGENTA, background: '#fdf4ff' }}
-        >
-          <div>
-            <p className="text-sm font-bold mb-1" style={{ color: '#86198f' }}>
-              📞 문의 및 안내
-            </p>
-            <p className="text-xs text-slate-700">
-              예약 관련 궁금하신 점은 담당자에게 직접 문의해 주세요.
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm">
-            <a
-              href={`tel:${CONTACT_PHONE}`}
-              className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-slate-300 rounded font-medium hover:border-blue-900"
-              style={{ color: BLUE }}
-            >
-              ☎ {CONTACT_PHONE}
-            </a>
-            <a
-              href={`mailto:${CONTACT_EMAIL}`}
-              className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-slate-300 rounded font-medium hover:border-blue-900 break-all"
-              style={{ color: BLUE }}
-            >
-              ✉ {CONTACT_EMAIL}
-            </a>
-          </div>
-        </div>
-
         <form onSubmit={onSubmit} className="space-y-8">
           {/* 신청자 정보 */}
           <Section title="신청자 정보">
