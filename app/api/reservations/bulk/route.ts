@@ -10,6 +10,7 @@ import {
 const bulkSchema = z.object({
   ids: z.array(z.string().min(1)).min(1).max(200),
   action: z.enum(['confirm', 'cancel', 'visited', 'no_show', 'clear_outcome']),
+  reason: z.string().max(2000).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { ids, action } = bulkSchema.parse(body);
+    const { ids, action, reason } = bulkSchema.parse(body);
 
     const reservations = await prisma.reservation.findMany({
       where: { id: { in: ids } },
@@ -49,11 +50,20 @@ export async function POST(req: NextRequest) {
             continue;
           }
           const wasConfirmed = r.status === 'confirmed';
+          const reasonText = reason?.trim();
+          const memoSuffix = reasonText
+            ? `[${wasConfirmed ? '취소' : '거절'} 사유] ${reasonText}`
+            : null;
+          const combinedMemo = memoSuffix
+            ? r.memo
+              ? `${r.memo}\n${memoSuffix}`
+              : memoSuffix
+            : r.memo;
           const updated = await prisma.reservation.update({
             where: { id: r.id },
-            data: { status: 'cancelled' },
+            data: { status: 'cancelled', memo: combinedMemo },
           });
-          emailJobs.push(sendCancellationNotice(updated, wasConfirmed));
+          emailJobs.push(sendCancellationNotice(updated, wasConfirmed, reasonText));
           success++;
         } else if (action === 'visited') {
           if (r.status !== 'confirmed') {
@@ -88,11 +98,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Notified count is len(ids) - len(found) for not-found
     const notFound = ids.length - reservations.length;
     failed += notFound;
 
-    // Fire-and-forget emails
     Promise.allSettled(emailJobs).catch(() => {});
 
     return NextResponse.json({ success, failed, errors });

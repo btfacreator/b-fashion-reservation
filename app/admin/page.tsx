@@ -89,6 +89,12 @@ export default function AdminDashboard() {
   const [calendarRefresh, setCalendarRefresh] = useState(0);
   const [showManualModal, setShowManualModal] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [cancelDialog, setCancelDialog] = useState<{
+    mode: 'single' | 'bulk';
+    ids: string[];
+    wasConfirmed: boolean;
+    label: string;
+  } | null>(null);
 
   // Settings tab state
   const [minDays, setMinDays] = useState(0);
@@ -211,16 +217,22 @@ export default function AdminDashboard() {
     };
   }, [selectedReservations]);
 
-  async function updateStatus(id: string, newStatus: 'confirmed' | 'cancelled') {
+  async function updateStatus(
+    id: string,
+    newStatus: 'confirmed' | 'cancelled',
+    reason?: string,
+  ) {
     const res = await fetch(`/api/reservations/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: newStatus }),
+      body: JSON.stringify({ status: newStatus, ...(reason ? { reason } : {}) }),
     });
     if (res.ok) {
       pushToast(
         'success',
-        newStatus === 'confirmed' ? '예약이 승인되었습니다. 확정 메일이 발송됩니다.' : '예약이 취소되었습니다.',
+        newStatus === 'confirmed'
+          ? '예약이 승인되었습니다. 확정 메일이 발송됩니다.'
+          : '예약이 취소되었습니다. 안내 메일이 발송됩니다.',
       );
       setSelected(null);
       setCalendarRefresh((k) => k + 1);
@@ -229,6 +241,15 @@ export default function AdminDashboard() {
       const data = await res.json().catch(() => ({}));
       pushToast('error', data.error || '처리에 실패했습니다.');
     }
+  }
+
+  function askCancelReason(id: string, wasConfirmed: boolean) {
+    setCancelDialog({
+      mode: 'single',
+      ids: [id],
+      wasConfirmed,
+      label: wasConfirmed ? '취소' : '거절',
+    });
   }
 
   async function setOutcome(id: string, outcome: 'visited' | 'no_show' | null) {
@@ -272,7 +293,10 @@ export default function AdminDashboard() {
     }
   }
 
-  async function bulkAction(action: 'confirm' | 'cancel' | 'visited' | 'no_show') {
+  async function bulkAction(
+    action: 'confirm' | 'cancel' | 'visited' | 'no_show',
+    reason?: string,
+  ) {
     const ids = Array.from(selectedIds);
     if (ids.length === 0) return;
     const labels: Record<typeof action, string> = {
@@ -281,12 +305,25 @@ export default function AdminDashboard() {
       visited: '방문 완료 표시',
       no_show: '노쇼 표시',
     };
+
+    // For cancel, open the reason dialog instead of confirming directly
+    if (action === 'cancel') {
+      const allConfirmed = selectedReservations.every((r) => r.status === 'confirmed');
+      setCancelDialog({
+        mode: 'bulk',
+        ids,
+        wasConfirmed: allConfirmed,
+        label: allConfirmed ? '취소' : '취소/거절',
+      });
+      return;
+    }
+
     if (!confirm(`선택한 ${ids.length}건을 ${labels[action]}하시겠습니까?`)) return;
 
     const res = await fetch('/api/reservations/bulk', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids, action }),
+      body: JSON.stringify({ ids, action, ...(reason ? { reason } : {}) }),
     });
     if (res.ok) {
       const data = await res.json();
@@ -301,6 +338,34 @@ export default function AdminDashboard() {
       const data = await res.json().catch(() => ({}));
       pushToast('error', data.error || '일괄 처리에 실패했습니다.');
     }
+  }
+
+  async function confirmCancelWithReason(reason: string) {
+    if (!cancelDialog) return;
+    const { mode, ids } = cancelDialog;
+    if (mode === 'bulk') {
+      const res = await fetch('/api/reservations/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, action: 'cancel', ...(reason ? { reason } : {}) }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        pushToast(
+          'success',
+          `처리 완료: 성공 ${data.success}건, 건너뜀 ${data.failed}건. 안내 메일이 발송됩니다.`,
+        );
+        setSelectedIds(new Set());
+        setCalendarRefresh((k) => k + 1);
+        await load();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        pushToast('error', data.error || '일괄 처리에 실패했습니다.');
+      }
+    } else {
+      await updateStatus(ids[0], 'cancelled', reason);
+    }
+    setCancelDialog(null);
   }
 
   async function addBlock(e: React.FormEvent) {
@@ -850,7 +915,7 @@ export default function AdminDashboard() {
                                   승인
                                 </button>
                                 <button
-                                  onClick={() => updateStatus(r.id, 'cancelled')}
+                                  onClick={() => askCancelReason(r.id, false)}
                                   className="px-2.5 py-1 border border-slate-300 text-xs rounded hover:bg-fuchsia-50"
                                   style={{ color: MAGENTA }}
                                 >
@@ -880,6 +945,15 @@ export default function AdminDashboard() {
                                 className="text-slate-500 hover:underline text-xs"
                               >
                                 초기화
+                              </button>
+                            )}
+                            {r.status === 'confirmed' && r.visitOutcome === null && (
+                              <button
+                                onClick={() => askCancelReason(r.id, true)}
+                                className="ml-2 text-xs hover:underline"
+                                style={{ color: MAGENTA }}
+                              >
+                                취소
                               </button>
                             )}
                           </td>
@@ -1098,11 +1172,24 @@ export default function AdminDashboard() {
           reservation={selected}
           onClose={() => setSelected(null)}
           onApprove={() => updateStatus(selected.id, 'confirmed')}
-          onReject={() => updateStatus(selected.id, 'cancelled')}
+          onReject={() => {
+            askCancelReason(selected.id, selected.status === 'confirmed');
+            setSelected(null);
+          }}
           onMarkVisited={() => setOutcome(selected.id, 'visited')}
           onMarkNoShow={() => setOutcome(selected.id, 'no_show')}
           onClearOutcome={() => setOutcome(selected.id, null)}
           onSaveMemo={(memo) => saveMemo(selected.id, memo)}
+        />
+      )}
+
+      {/* Cancel/Reject Reason Dialog */}
+      {cancelDialog && (
+        <CancelReasonDialog
+          label={cancelDialog.label}
+          count={cancelDialog.ids.length}
+          onClose={() => setCancelDialog(null)}
+          onConfirm={(reason) => confirmCancelWithReason(reason)}
         />
       )}
 
@@ -1352,6 +1439,95 @@ function DetailModal({
               예약 취소
             </button>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CancelReasonDialog({
+  label,
+  count,
+  onClose,
+  onConfirm,
+}: {
+  label: string;
+  count: number;
+  onClose: () => void;
+  onConfirm: (reason: string) => void;
+}) {
+  const [reason, setReason] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape' && !submitting) onClose();
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose, submitting]);
+
+  async function handleConfirm() {
+    setSubmitting(true);
+    try {
+      await onConfirm(reason);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 no-print"
+      onClick={() => !submitting && onClose()}
+    >
+      <div
+        className="bg-white max-w-md w-full rounded shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6 border-b border-slate-200">
+          <p className="text-sm text-slate-500 mb-1">예약 {label}</p>
+          <h2 className="text-xl font-bold" style={{ color: BLUE }}>
+            {count > 1 ? `${count}건 ` : ''}예약을 {label}하시겠습니까?
+          </h2>
+        </div>
+
+        <div className="p-6 space-y-3">
+          <label className="block text-sm font-bold text-slate-900">
+            {label} 사유 <span className="text-slate-500 text-xs font-normal">(선택)</span>
+          </label>
+          <p className="text-xs text-slate-500">
+            입력하신 사유는 신청자에게 발송되는 안내 메일에 포함됩니다.
+          </p>
+          <textarea
+            className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:border-blue-900 focus:outline-none min-h-[100px] resize-y"
+            placeholder={`예: 해당 일자에 내부 행사가 있어 ${label} 처리되었습니다.`}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            maxLength={2000}
+            autoFocus
+          />
+          <p className="text-xs text-slate-400">{reason.length} / 2000</p>
+        </div>
+
+        <div className="p-6 border-t border-slate-200 flex gap-2 justify-end bg-slate-50">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={submitting}
+            className="px-5 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50"
+          >
+            닫기
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            disabled={submitting}
+            style={{ background: MAGENTA }}
+            className="px-5 py-2 text-sm text-white rounded hover:opacity-90 disabled:opacity-50"
+          >
+            {submitting ? '처리 중...' : `${label} 확정 및 메일 발송`}
+          </button>
         </div>
       </div>
     </div>

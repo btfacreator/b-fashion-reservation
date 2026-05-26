@@ -8,6 +8,7 @@ const patchSchema = z.object({
   status: z.enum(['confirmed', 'cancelled']).optional(),
   memo: z.string().max(2000).nullable().optional(),
   visitOutcome: z.enum(['visited', 'no_show']).nullable().optional(),
+  reason: z.string().max(2000).optional(),
 });
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
@@ -53,20 +54,32 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     const wasConfirmed = reservation.status === 'confirmed';
 
+    // Append reason to memo for record-keeping
+    const reasonText = data.reason?.trim();
+    const memoSuffix = reasonText
+      ? `[${wasConfirmed ? '취소' : '거절'} 사유] ${reasonText}`
+      : null;
+    const combinedMemo =
+      data.status === 'cancelled' && memoSuffix
+        ? reservation.memo
+          ? `${reservation.memo}\n${memoSuffix}`
+          : memoSuffix
+        : reservation.memo;
+
     const updated = await prisma.reservation.update({
       where: { id: params.id },
       data: {
         status: data.status,
         ...(data.status === 'confirmed' && { approvedAt: new Date() }),
         ...(data.status === 'cancelled' && { visitOutcome: null }),
-        ...(data.memo !== undefined && { memo: data.memo }),
+        ...(data.memo !== undefined ? { memo: data.memo } : { memo: combinedMemo }),
       },
     });
 
     if (data.status === 'confirmed') {
       sendApprovalConfirmation(updated).catch((err) => console.error('[approval] email failed:', err));
     } else if (data.status === 'cancelled') {
-      sendCancellationNotice(updated, wasConfirmed).catch((err) =>
+      sendCancellationNotice(updated, wasConfirmed, reasonText).catch((err) =>
         console.error('[cancel] email failed:', err),
       );
     }

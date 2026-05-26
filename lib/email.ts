@@ -70,8 +70,8 @@ function contactBlock(): string {
   return `
     <div style="margin-top:24px;padding:18px;background:#fdf4ff;border:1px solid #d946ef;border-radius:8px;">
       <p style="margin:0 0 8px;font-weight:700;color:#86198f;font-size:14px;">📞 문의 안내</p>
-      <p style="margin:0 0 4px;font-size:14px;color:#1a1a1a;">
-        <strong>담당자</strong> · ksmin 책임자
+      <p style="margin:0 0 8px;font-size:14px;color:#1a1a1a;">
+        <strong>B.Fashion ShowRoom 담당자</strong>
       </p>
       <p style="margin:0 0 4px;font-size:14px;color:#1a1a1a;">
         ☎ 전화: <a href="tel:${CONTACT_PHONE}" style="color:#1e3a8a;text-decoration:none;font-weight:600;">${CONTACT_PHONE}</a>
@@ -239,12 +239,27 @@ export async function sendReminderEmail(data: ReservationData): Promise<void> {
   });
 }
 
-/** 신청자에게: 취소/거절 안내 */
-export async function sendCancellationNotice(data: ReservationData, wasConfirmed: boolean): Promise<void> {
+/** 신청자에게: 취소/거절 안내 (사유 포함 가능) */
+export async function sendCancellationNotice(
+  data: ReservationData,
+  wasConfirmed: boolean,
+  reason?: string | null,
+): Promise<void> {
   const title = wasConfirmed ? '예약이 취소되었습니다' : '예약 신청이 거절되었습니다';
   const message = wasConfirmed
     ? '확정된 예약이 취소되었음을 안내드립니다.'
     : '신청해 주신 예약이 부득이한 사정으로 거절되었습니다.';
+
+  const reasonBlock = reason && reason.trim()
+    ? `
+      <div style="margin:20px 0;padding:16px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:4px;">
+        <p style="margin:0 0 8px;font-weight:700;color:#78350f;font-size:14px;">
+          ${wasConfirmed ? '취소' : '거절'} 사유
+        </p>
+        <p style="margin:0;font-size:14px;color:#1a1a1a;line-height:1.6;white-space:pre-line;">${escape(reason.trim())}</p>
+      </div>
+    `
+    : '';
 
   const html = `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#0f172a;">
@@ -255,6 +270,8 @@ export async function sendCancellationNotice(data: ReservationData, wasConfirmed
         ${row('방문 일자', formatDate(data.visitDate))}
         ${row('방문 시간', formatTimeLabel(data.visitTime))}
       </table>
+      ${reasonBlock}
+      <p style="color:#475569;font-size:13px;margin-top:16px;">문의사항이 있으시면 아래 담당자에게 연락 주시기 바랍니다.</p>
       ${contactBlock()}
     </div>
   `;
