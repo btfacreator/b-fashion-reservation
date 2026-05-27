@@ -73,6 +73,20 @@ input[type='number'] {
   color: #94a3b8;
 }
 
+/* Dark mode for input-luxe */
+.dark .input-luxe {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+.dark .input-luxe::placeholder {
+  color: #64748b;
+}
+.dark .input-luxe:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
+}
+
 @media print {
   .no-print {
     display: none !important;

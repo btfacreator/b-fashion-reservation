@@ -52,11 +52,11 @@ export function AnalyticsCharts() {
   }, []);
 
   if (loading) {
-    return <p className="text-slate-500 bg-white p-8 text-center rounded border border-slate-200">분석 데이터 불러오는 중...</p>;
+    return <p className="text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 p-8 text-center rounded border border-slate-200 dark:border-slate-700">분석 데이터 불러오는 중...</p>;
   }
 
   if (!data) {
-    return <p className="text-slate-500 bg-white p-8 text-center rounded border border-slate-200">데이터를 불러오지 못했습니다.</p>;
+    return <p className="text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 p-8 text-center rounded border border-slate-200 dark:border-slate-700">데이터를 불러오지 못했습니다.</p>;
   }
 
   const totalRecorded = data.kpi.visited + data.kpi.noShow;
@@ -233,7 +233,7 @@ export function AnalyticsCharts() {
       {/* 소속 Top 10 */}
       <ChartCard title="소속 TOP 10" subtitle="가장 많이 방문한 소속">
         {data.topAffiliations.length === 0 ? (
-          <p className="text-sm text-slate-500 text-center py-8">아직 데이터가 없습니다.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-8">아직 데이터가 없습니다.</p>
         ) : (
           <div className="space-y-2">
             {data.topAffiliations.map((a, i) => {
@@ -244,7 +244,7 @@ export function AnalyticsCharts() {
                   <div className="text-xs font-bold text-slate-400 w-6 text-right">{i + 1}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-slate-900 truncate">{a.name}</span>
+                      <span className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{a.name}</span>
                       <span className="text-sm font-bold tabular-nums" style={{ color: BLUE }}>
                         {a.count}건
                       </span>
@@ -291,7 +291,7 @@ function KpiCard({
       <p className="text-2xl font-bold tabular-nums my-1" style={{ color: valueColor }}>
         {value}
       </p>
-      <p className="text-xs text-slate-500">{sub}</p>
+      <p className="text-xs text-slate-500 dark:text-slate-400">{sub}</p>
     </div>
   );
 }
@@ -306,12 +306,12 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white border border-slate-200 rounded p-4">
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-4">
       <div className="mb-3">
         <h3 className="font-bold text-base" style={{ color: BLUE }}>
           {title}
         </h3>
-        {subtitle && <p className="text-xs text-slate-500">{subtitle}</p>}
+        {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>}
       </div>
       {children}
     </div>

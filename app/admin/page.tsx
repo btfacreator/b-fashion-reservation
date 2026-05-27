@@ -57,7 +57,7 @@ function statusBadge(r: Reservation): { text: string; cls: string } {
   if (r.status === 'pending')
     return { text: '검토중', cls: 'bg-fuchsia-50 text-fuchsia-900 border border-fuchsia-300' };
   if (r.status === 'cancelled')
-    return { text: '취소', cls: 'bg-slate-100 text-slate-500 border border-slate-300' };
+    return { text: '취소', cls: 'bg-slate-100 text-slate-500 dark:text-slate-400 border border-slate-300' };
   if (r.status === 'confirmed') {
     if (r.visitOutcome === 'visited')
       return { text: '방문 완료', cls: 'bg-emerald-50 text-emerald-900 border border-emerald-300' };
@@ -65,7 +65,7 @@ function statusBadge(r: Reservation): { text: string; cls: string } {
       return { text: '노쇼', cls: 'bg-slate-700 text-white border border-slate-700' };
     return { text: '확정', cls: 'bg-blue-50 text-blue-900 border border-blue-300' };
   }
-  return { text: r.status, cls: 'bg-slate-100 text-slate-500 border border-slate-300' };
+  return { text: r.status, cls: 'bg-slate-100 text-slate-500 dark:text-slate-400 border border-slate-300' };
 }
 
 interface Toast {
@@ -101,6 +101,26 @@ export default function AdminDashboard() {
   const [minDays, setMinDays] = useState(0);
   const [maxDays, setMaxDays] = useState(60);
   const [settingsLoading, setSettingsLoading] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Apply saved dark mode on mount, and clean up on unmount (admin only)
+  useEffect(() => {
+    const saved = localStorage.getItem('admin-dark') === '1';
+    setDarkMode(saved);
+    if (saved) document.documentElement.classList.add('dark');
+    return () => {
+      document.documentElement.classList.remove('dark');
+    };
+  }, []);
+
+  function toggleDarkMode() {
+    setDarkMode((prev) => {
+      const next = !prev;
+      localStorage.setItem('admin-dark', next ? '1' : '0');
+      document.documentElement.classList.toggle('dark', next);
+      return next;
+    });
+  }
 
   const [blockDate, setBlockDate] = useState('');
   const [blockTime, setBlockTime] = useState<string>('');
@@ -474,14 +494,14 @@ export default function AdminDashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-slate-100">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 no-print">
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 no-print">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <div className="flex items-center gap-3">
             <span className="inline-block w-1.5 h-8 flex-shrink-0" style={{ background: MAGENTA }} />
             <div>
-              <p className="text-xs text-slate-500 font-medium">부산섬유패션산업연합회</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">부산섬유패션산업연합회</p>
               <h1 className="text-base sm:text-lg font-bold" style={{ color: BLUE }}>
                 B.Fashion ShowRoom 관리자
               </h1>
@@ -498,7 +518,7 @@ export default function AdminDashboard() {
             <a
               href="/admin/print"
               target="_blank"
-              className="flex-1 sm:flex-none px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded hover:bg-slate-50 transition-colors whitespace-nowrap text-center"
+              className="flex-1 sm:flex-none px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded hover:bg-slate-50 dark:bg-slate-900/40 transition-colors whitespace-nowrap text-center"
             >
               일정 인쇄
             </a>
@@ -511,7 +531,7 @@ export default function AdminDashboard() {
             </button>
             <button
               onClick={logout}
-              className="flex-1 sm:flex-none px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded hover:bg-slate-50 transition-colors whitespace-nowrap"
+              className="flex-1 sm:flex-none px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded hover:bg-slate-50 dark:bg-slate-900/40 transition-colors whitespace-nowrap"
             >
               로그아웃
             </button>
@@ -530,7 +550,7 @@ export default function AdminDashboard() {
               onClick={() => setTab(t)}
               style={tab === t ? { borderColor: BLUE, color: BLUE } : undefined}
               className={`px-5 py-3 text-sm border-b-2 -mb-px font-medium whitespace-nowrap ${
-                tab === t ? '' : 'border-transparent text-slate-500 hover:text-slate-900'
+                tab === t ? '' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-slate-100'
               }`}
             >
               {label}
@@ -547,7 +567,7 @@ export default function AdminDashboard() {
               <h2 className="text-2xl font-bold mb-1" style={{ color: BLUE }}>
                 대시보드
               </h2>
-              <p className="text-sm text-slate-500">{todayLabel}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">{todayLabel}</p>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -594,7 +614,7 @@ export default function AdminDashboard() {
                 <h3 className="text-lg font-bold" style={{ color: BLUE }}>
                   월간 예약 현황
                 </h3>
-                <span className="text-sm text-slate-500">
+                <span className="text-sm text-slate-500 dark:text-slate-400">
                   날짜를 클릭하면 해당 일자의 예약 목록으로 이동합니다.
                 </span>
               </div>
@@ -616,7 +636,7 @@ export default function AdminDashboard() {
                 <h3 className="text-lg font-bold" style={{ color: BLUE }}>
                   오늘의 일정
                 </h3>
-                <span className="text-sm text-slate-500">총 {stats?.todaySchedule.length ?? 0}건</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">총 {stats?.todaySchedule.length ?? 0}건</span>
               </div>
               {stats && stats.todaySchedule.length > 0 ? (
                 <div className="space-y-2">
@@ -626,7 +646,7 @@ export default function AdminDashboard() {
                       <div
                         key={r.id}
                         onClick={() => setSelected(r)}
-                        className="bg-white border border-slate-200 rounded p-4 hover:border-blue-900 cursor-pointer transition-colors flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4"
+                        className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-4 hover:border-blue-900 cursor-pointer transition-colors flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4"
                       >
                         <div className="flex items-center justify-between sm:contents">
                           <div
@@ -643,11 +663,11 @@ export default function AdminDashboard() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="font-medium">{r.name}</div>
-                          <div className="text-sm text-slate-500 truncate">
+                          <div className="text-sm text-slate-500 dark:text-slate-400 truncate">
                             {r.affiliation} · {r.phone}
                           </div>
                         </div>
-                        <div className="text-sm text-slate-700 whitespace-nowrap">
+                        <div className="text-sm text-slate-700 dark:text-slate-300 whitespace-nowrap">
                           {r.transport === 'car' ? `🚗 ${r.carNumber || ''}` : '🚶 도보'}
                         </div>
                       </div>
@@ -655,7 +675,7 @@ export default function AdminDashboard() {
                   })}
                 </div>
               ) : (
-                <div className="bg-white border border-slate-200 rounded p-8 text-center text-slate-500">
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-8 text-center text-slate-500 dark:text-slate-400">
                   오늘 예약된 방문이 없습니다.
                 </div>
               )}
@@ -682,21 +702,21 @@ export default function AdminDashboard() {
                       setDateRange('all');
                     }}
                   />
-                  <p className="text-xs text-slate-500 mt-2">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                     날짜를 클릭하면 해당 날짜의 예약만 표시됩니다. 다시 클릭하면 해제됩니다.
                   </p>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex gap-2 flex-wrap items-center">
-                    <span className="text-sm text-slate-600 font-medium w-12">상태</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-400 font-medium w-12">상태</span>
                     {(['pending', 'confirmed', 'cancelled', 'all'] as const).map((f) => (
                       <button
                         key={f}
                         onClick={() => setFilter(f)}
                         style={filter === f ? { background: BLUE, color: '#fff' } : undefined}
                         className={`px-3 py-1.5 text-sm rounded ${
-                          filter === f ? '' : 'bg-white border border-slate-300 hover:border-blue-900'
+                          filter === f ? '' : 'bg-white dark:bg-slate-800 border border-slate-300 hover:border-blue-900'
                         }`}
                       >
                         {f === 'all'
@@ -711,7 +731,7 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="flex gap-2 flex-wrap items-center">
-                    <span className="text-sm text-slate-600 font-medium w-12">기간</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-400 font-medium w-12">기간</span>
                     {([
                       ['all', '전체'],
                       ['today', '오늘'],
@@ -732,7 +752,7 @@ export default function AdminDashboard() {
                         className={`px-3 py-1.5 text-sm rounded ${
                           dateRange === d && !selectedDate
                             ? ''
-                            : 'bg-white border border-slate-300 hover:border-blue-900'
+                            : 'bg-white dark:bg-slate-800 border border-slate-300 hover:border-blue-900'
                         }`}
                       >
                         {label}
@@ -741,18 +761,18 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-600 font-medium w-12">검색</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-400 font-medium w-12">검색</span>
                     <input
                       type="text"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder="이름, 연락처, 이메일, 소속, 차량번호로 검색"
-                      className="flex-1 px-3 py-1.5 text-sm border border-slate-300 rounded focus:border-blue-900 focus:outline-none bg-white"
+                      className="flex-1 px-3 py-1.5 text-sm border border-slate-300 rounded focus:border-blue-900 focus:outline-none bg-white dark:bg-slate-800"
                     />
                     {search && (
                       <button
                         onClick={() => setSearch('')}
-                        className="text-sm text-slate-500 hover:text-slate-900"
+                        className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-slate-100"
                       >
                         초기화
                       </button>
@@ -830,21 +850,21 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            <p className="text-sm text-slate-500 mb-3">총 {filteredReservations.length}건</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">총 {filteredReservations.length}건</p>
 
             {loading ? (
-              <p className="text-slate-500 bg-white p-8 text-center rounded border border-slate-200">
+              <p className="text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 p-8 text-center rounded border border-slate-200 dark:border-slate-700">
                 불러오는 중...
               </p>
             ) : filteredReservations.length === 0 ? (
-              <p className="text-slate-500 bg-white p-8 text-center rounded border border-slate-200">
+              <p className="text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 p-8 text-center rounded border border-slate-200 dark:border-slate-700">
                 조건에 맞는 예약이 없습니다.
               </p>
             ) : (
               <>
               {/* 모바일: 카드 리스트 */}
               <div className="md:hidden space-y-2">
-                <label className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded text-sm">
+                <label className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-sm">
                   <input
                     type="checkbox"
                     checked={
@@ -864,8 +884,8 @@ export default function AdminDashboard() {
                     <div
                       key={r.id}
                       onClick={() => setSelected(r)}
-                      className={`bg-white border rounded p-3 cursor-pointer ${
-                        isSel ? 'border-blue-900 bg-blue-50' : 'border-slate-200'
+                      className={`bg-white dark:bg-slate-800 border rounded p-3 cursor-pointer ${
+                        isSel ? 'border-blue-900 bg-blue-50' : 'border-slate-200 dark:border-slate-700'
                       }`}
                     >
                       <div className="flex items-start gap-3">
@@ -884,23 +904,23 @@ export default function AdminDashboard() {
                               {s.text}
                             </span>
                           </div>
-                          <div className="text-sm text-slate-600 mb-1">{r.affiliation}</div>
+                          <div className="text-sm text-slate-600 dark:text-slate-400 mb-1">{r.affiliation}</div>
                           <div className="flex items-center gap-2 text-sm">
                             <span style={{ color: BLUE }} className="font-bold tabular-nums">
                               {r.visitDate.split('T')[0]} {r.visitTime}
                             </span>
                           </div>
-                          <div className="text-xs text-slate-500 mt-1">
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                             {r.phone} ·{' '}
                             {r.transport === 'car' ? `🚗 ${r.carNumber || ''}` : '🚶 도보'}
                           </div>
                           {r.memo && (
-                            <div className="text-xs text-slate-600 mt-1 truncate">
+                            <div className="text-xs text-slate-600 dark:text-slate-400 mt-1 truncate">
                               📝 {r.memo}
                             </div>
                           )}
                           <div
-                            className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-slate-100"
+                            className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-slate-100 dark:border-slate-700/60"
                             onClick={(e) => e.stopPropagation()}
                           >
                             {r.status === 'pending' && (
@@ -947,7 +967,7 @@ export default function AdminDashboard() {
                             {r.status === 'confirmed' && r.visitOutcome !== null && (
                               <button
                                 onClick={() => setOutcome(r.id, null)}
-                                className="text-slate-500 text-xs hover:underline"
+                                className="text-slate-500 dark:text-slate-400 text-xs hover:underline"
                               >
                                 결과 초기화
                               </button>
@@ -961,10 +981,10 @@ export default function AdminDashboard() {
               </div>
 
               {/* 데스크탑: 테이블 */}
-              <div className="hidden md:block bg-white border border-slate-200 rounded overflow-x-auto">
+              <div className="hidden md:block bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr className="text-left text-slate-700 font-medium">
+                  <thead className="bg-slate-50 dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-700">
+                    <tr className="text-left text-slate-700 dark:text-slate-300 font-medium">
                       <th className="px-3 py-3 w-10">
                         <input
                           type="checkbox"
@@ -996,8 +1016,8 @@ export default function AdminDashboard() {
                         <tr
                           key={r.id}
                           onClick={() => setSelected(r)}
-                          className={`border-b border-slate-100 last:border-0 cursor-pointer ${
-                            isSel ? 'bg-blue-50' : 'hover:bg-slate-50'
+                          className={`border-b border-slate-100 dark:border-slate-700/60 last:border-0 cursor-pointer ${
+                            isSel ? 'bg-blue-50' : 'hover:bg-slate-50 dark:bg-slate-900/40'
                           }`}
                         >
                           <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
@@ -1027,7 +1047,7 @@ export default function AdminDashboard() {
                           <td className="px-3 py-3 whitespace-nowrap">
                             {r.transport === 'car' ? `🚗 ${r.carNumber || ''}` : '🚶 도보'}
                           </td>
-                          <td className="px-3 py-3 max-w-[160px] truncate text-slate-600" title={r.memo || ''}>
+                          <td className="px-3 py-3 max-w-[160px] truncate text-slate-600 dark:text-slate-400" title={r.memo || ''}>
                             {r.memo ? `📝 ${r.memo}` : '-'}
                           </td>
                           <td className="px-3 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
@@ -1068,7 +1088,7 @@ export default function AdminDashboard() {
                             {r.status === 'confirmed' && r.visitOutcome !== null && (
                               <button
                                 onClick={() => setOutcome(r.id, null)}
-                                className="text-slate-500 hover:underline text-xs"
+                                className="text-slate-500 dark:text-slate-400 hover:underline text-xs"
                               >
                                 초기화
                               </button>
@@ -1101,14 +1121,14 @@ export default function AdminDashboard() {
               <h2 className="text-2xl font-bold mb-1" style={{ color: BLUE }}>
                 시간대 차단
               </h2>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 특정 날짜·시간을 미리 막아두면 사용자가 예약할 수 없습니다.
               </p>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded p-5">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-5">
               <h3 className="font-bold mb-1">차단 추가</h3>
-              <p className="text-sm text-slate-500 mb-4">
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
                 시간을 선택하지 않으면 해당 날짜 전체가 차단됩니다.<br />
                 한국 공휴일과 주말은 자동으로 차단되어 별도 설정이 필요 없습니다.
               </p>
@@ -1163,17 +1183,17 @@ export default function AdminDashboard() {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-bold">차단 목록</h3>
-                <span className="text-sm text-slate-500">총 {blocks.length}건</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">총 {blocks.length}건</span>
               </div>
               {blocks.length === 0 ? (
-                <p className="text-slate-500 bg-white p-6 border border-slate-200 rounded text-sm">
+                <p className="text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 p-6 border border-slate-200 dark:border-slate-700 rounded text-sm">
                   차단된 시간대가 없습니다.
                 </p>
               ) : (
-                <div className="bg-white border border-slate-200 rounded overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
                   <table className="w-full text-sm">
-                    <thead className="bg-slate-50 border-b border-slate-200">
-                      <tr className="text-left text-slate-700 font-medium">
+                    <thead className="bg-slate-50 dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-700">
+                      <tr className="text-left text-slate-700 dark:text-slate-300 font-medium">
                         <th className="px-3 py-3">날짜</th>
                         <th className="px-3 py-3">시간</th>
                         <th className="px-3 py-3">사유</th>
@@ -1182,10 +1202,10 @@ export default function AdminDashboard() {
                     </thead>
                     <tbody>
                       {blocks.map((b) => (
-                        <tr key={b.id} className="border-b border-slate-100 last:border-0">
+                        <tr key={b.id} className="border-b border-slate-100 dark:border-slate-700/60 last:border-0">
                           <td className="px-3 py-3">{b.date.split('T')[0]}</td>
                           <td className="px-3 py-3">
-                            {b.time ? b.time : <span className="text-slate-500">전체일</span>}
+                            {b.time ? b.time : <span className="text-slate-500 dark:text-slate-400">전체일</span>}
                           </td>
                           <td className="px-3 py-3">{b.reason || '-'}</td>
                           <td className="px-3 py-3">
@@ -1214,7 +1234,7 @@ export default function AdminDashboard() {
               <h2 className="text-2xl font-bold mb-1" style={{ color: BLUE }}>
                 통계
               </h2>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 예약 데이터를 시각화해 운영 인사이트를 확인할 수 있습니다.
               </p>
             </div>
@@ -1229,12 +1249,12 @@ export default function AdminDashboard() {
               <h2 className="text-2xl font-bold mb-1" style={{ color: BLUE }}>
                 설정
               </h2>
-              <p className="text-sm text-slate-500">예약 가능 기간 및 리마인더 발송을 관리합니다.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">예약 가능 기간 및 리마인더 발송을 관리합니다.</p>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded p-6">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-6">
               <h3 className="font-bold mb-1">예약 가능 기간</h3>
-              <p className="text-sm text-slate-500 mb-5">
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
                 사용자가 예약을 신청할 수 있는 범위를 설정합니다.
               </p>
 
@@ -1243,7 +1263,7 @@ export default function AdminDashboard() {
                   <label className="block text-sm font-medium text-slate-900 mb-1">
                     최소 일수 (오늘부터)
                   </label>
-                  <p className="text-xs text-slate-500 mb-2">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
                     0 = 당일 예약 허용, 1 = 최소 내일부터, 3 = 최소 3일 후부터
                   </p>
                   <input
@@ -1261,7 +1281,7 @@ export default function AdminDashboard() {
                   <label className="block text-sm font-medium text-slate-900 mb-1">
                     최대 일수 (오늘부터)
                   </label>
-                  <p className="text-xs text-slate-500 mb-2">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
                     너무 먼 미래 예약을 방지합니다. 예: 60 = 약 2개월 후까지
                   </p>
                   <input
@@ -1272,7 +1292,7 @@ export default function AdminDashboard() {
                     onChange={(e) => setMaxDays(parseInt(e.target.value || '60', 10))}
                     className="w-32 px-3 py-2 border border-slate-300 rounded text-sm focus:border-blue-900 focus:outline-none"
                   />
-                  <span className="ml-2 text-sm text-slate-600">일 후까지 예약 가능</span>
+                  <span className="ml-2 text-sm text-slate-600 dark:text-slate-400">일 후까지 예약 가능</span>
                 </div>
 
                 <div className="pt-2">
@@ -1288,13 +1308,40 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded p-6">
-              <h3 className="font-bold mb-1">리마인더 이메일</h3>
-              <p className="text-sm text-slate-500 mb-4">
-                매일 오전 9시(KST)에 다음 날 방문 예정자에게 자동으로 안내 메일이 발송됩니다.<br />
-                <span className="text-xs">
-                  (배포 환경에서 Vercel Cron이 동작합니다. 로컬 개발에서는 아래 버튼으로 수동 발송 가능합니다.)
-                </span>
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-6">
+              <h3 className="font-bold mb-1 dark:text-slate-100">화면 모드</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                관리자 페이지에만 적용됩니다. 브라우저별로 저장됩니다.
+              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium dark:text-slate-100">다크 모드</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    {darkMode ? '어두운 배경 사용 중' : '밝은 배경 사용 중'}
+                  </p>
+                </div>
+                <button
+                  onClick={toggleDarkMode}
+                  role="switch"
+                  aria-checked={darkMode}
+                  aria-label="다크 모드 토글"
+                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
+                    darkMode ? 'bg-blue-900' : 'bg-slate-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-800 transition-transform ${
+                      darkMode ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-6">
+              <h3 className="font-bold mb-1 dark:text-slate-100">리마인더 이메일</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                매일 오전 9시(KST)에 다음 날 방문 예정자에게 자동으로 안내 메일이 발송됩니다.
               </p>
               <button
                 onClick={triggerReminders}
@@ -1359,7 +1406,7 @@ export default function AdminDashboard() {
                 ? 'bg-blue-50 border-blue-300 text-blue-900'
                 : t.type === 'error'
                 ? 'bg-fuchsia-50 border-fuchsia-300 text-fuchsia-900'
-                : 'bg-white border-slate-300 text-slate-900'
+                : 'bg-white dark:bg-slate-800 border-slate-300 text-slate-900 dark:text-slate-100'
             }`}
           >
             {t.message}
@@ -1383,7 +1430,7 @@ function StatCard({
 }) {
   return (
     <div
-      className={`p-5 rounded border ${accent ? 'border-2' : 'border-slate-200'} bg-white`}
+      className={`p-5 rounded border ${accent ? 'border-2' : 'border-slate-200 dark:border-slate-700'} bg-white dark:bg-slate-800`}
       style={accent ? { borderColor: MAGENTA, background: '#fdf4ff' } : undefined}
     >
       <p
@@ -1398,7 +1445,7 @@ function StatCard({
       >
         {value}
       </p>
-      <p className="text-xs text-slate-500">{sub}</p>
+      <p className="text-xs text-slate-500 dark:text-slate-400">{sub}</p>
     </div>
   );
 }
@@ -1440,12 +1487,12 @@ function DetailModal({
       onClick={onClose}
     >
       <div
-        className="bg-white max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded shadow-xl"
+        className="bg-white dark:bg-slate-800 max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 border-b border-slate-200 flex items-start justify-between">
+        <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-start justify-between">
           <div>
-            <p className="text-sm text-slate-500 mb-1">예약 상세</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">예약 상세</p>
             <h2 className="text-2xl font-bold" style={{ color: BLUE }}>
               {reservation.name}
             </h2>
@@ -1455,7 +1502,7 @@ function DetailModal({
             <span className={`px-2.5 py-1 text-xs rounded font-medium ${s.cls}`}>{s.text}</span>
             <button
               onClick={onClose}
-              className="text-slate-500 hover:text-slate-900 text-2xl leading-none w-8 h-8 flex items-center justify-center"
+              className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-slate-100 text-2xl leading-none w-8 h-8 flex items-center justify-center"
               aria-label="닫기"
             >
               ×
@@ -1490,9 +1537,9 @@ function DetailModal({
 
           {/* Visit Outcome - only for confirmed */}
           {reservation.status === 'confirmed' && (
-            <div className="bg-slate-50 border border-slate-200 rounded p-4">
+            <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded p-4">
               <label className="block text-sm font-medium text-slate-900 mb-1">방문 결과</label>
-              <p className="text-xs text-slate-500 mb-3">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
                 실제 방문 여부를 기록하면 통계에 반영되고 운영 데이터로 활용됩니다.
               </p>
               {reservation.visitOutcome === null && (
@@ -1532,7 +1579,7 @@ function DetailModal({
 
           <div className="pt-2">
             <label className="block text-sm font-medium text-slate-900 mb-1">관리자 메모</label>
-            <p className="text-xs text-slate-500 mb-2">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
               내부 사용용입니다. 사용자에게는 노출되지 않습니다.
             </p>
             <textarea
@@ -1553,7 +1600,7 @@ function DetailModal({
           </div>
         </div>
 
-        <div className="p-6 border-t border-slate-200 flex gap-2 justify-end bg-slate-50">
+        <div className="p-6 border-t border-slate-200 dark:border-slate-700 flex gap-2 justify-end bg-slate-50 dark:bg-slate-900/40">
           {reservation.status === 'pending' && (
             <>
               <button
@@ -1624,11 +1671,11 @@ function CancelReasonDialog({
       onClick={() => !submitting && onClose()}
     >
       <div
-        className="bg-white max-w-md w-full rounded shadow-xl"
+        className="bg-white dark:bg-slate-800 max-w-md w-full rounded shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 border-b border-slate-200">
-          <p className="text-sm text-slate-500 mb-1">예약 {label}</p>
+        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">예약 {label}</p>
           <h2 className="text-xl font-bold" style={{ color: BLUE }}>
             {count > 1 ? `${count}건 ` : ''}예약을 {label}하시겠습니까?
           </h2>
@@ -1636,9 +1683,9 @@ function CancelReasonDialog({
 
         <div className="p-6 space-y-3">
           <label className="block text-sm font-bold text-slate-900">
-            {label} 사유 <span className="text-slate-500 text-xs font-normal">(선택)</span>
+            {label} 사유 <span className="text-slate-500 dark:text-slate-400 text-xs font-normal">(선택)</span>
           </label>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             입력하신 사유는 신청자에게 발송되는 안내 메일에 포함됩니다.
           </p>
           <textarea
@@ -1652,12 +1699,12 @@ function CancelReasonDialog({
           <p className="text-xs text-slate-400">{reason.length} / 2000</p>
         </div>
 
-        <div className="p-6 border-t border-slate-200 flex gap-2 justify-end bg-slate-50">
+        <div className="p-6 border-t border-slate-200 dark:border-slate-700 flex gap-2 justify-end bg-slate-50 dark:bg-slate-900/40">
           <button
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="px-5 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50"
+            className="px-5 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50 dark:bg-slate-900/40 disabled:opacity-50"
           >
             닫기
           </button>
@@ -1679,8 +1726,8 @@ function CancelReasonDialog({
 function DetailRow({ label, value, multiline }: { label: string; value: string; multiline?: boolean }) {
   return (
     <div className="grid grid-cols-[100px_1fr] gap-4 text-sm">
-      <div className="text-sm text-slate-500 pt-0.5">{label}</div>
-      <div className={`text-slate-900 ${multiline ? 'whitespace-pre-line' : ''}`}>{value}</div>
+      <div className="text-sm text-slate-500 dark:text-slate-400 pt-0.5">{label}</div>
+      <div className={`text-slate-900 dark:text-slate-100 ${multiline ? 'whitespace-pre-line' : ''}`}>{value}</div>
     </div>
   );
 }
@@ -1761,22 +1808,22 @@ function ManualReservationModal({
       onClick={onClose}
     >
       <div
-        className="bg-white max-w-xl w-full max-h-[90vh] overflow-y-auto rounded shadow-xl"
+        className="bg-white dark:bg-slate-800 max-w-xl w-full max-h-[90vh] overflow-y-auto rounded shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 border-b border-slate-200 flex items-center justify-between">
+        <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
           <div>
-            <p className="text-sm text-slate-500 mb-1">관리자 직접 등록</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">관리자 직접 등록</p>
             <h2 className="text-xl font-bold" style={{ color: BLUE }}>
               예약 등록
             </h2>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               전화·방문 등으로 받은 예약을 즉시 확정 상태로 등록합니다.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-500 hover:text-slate-900 text-2xl leading-none w-8 h-8 flex items-center justify-center"
+            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-slate-100 text-2xl leading-none w-8 h-8 flex items-center justify-center"
             aria-label="닫기"
           >
             ×
@@ -1937,11 +1984,11 @@ function ManualReservationModal({
             <span>등록 즉시 신청자에게 확정 메일 발송</span>
           </label>
 
-          <div className="flex gap-2 justify-end pt-4 border-t border-slate-200">
+          <div className="flex gap-2 justify-end pt-4 border-t border-slate-200 dark:border-slate-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50"
+              className="px-5 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50 dark:bg-slate-900/40"
             >
               취소
             </button>

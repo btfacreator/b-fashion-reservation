@@ -107,12 +107,12 @@ export function Calendar({
   }, [reservations, monthStr]);
 
   return (
-    <div className="bg-white border border-slate-200 rounded">
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
         <button
           onClick={() => setCursor(new Date(year, month - 1, 1))}
-          className="px-3 py-1 hover:bg-slate-100 rounded text-sm"
+          className="px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-sm"
           aria-label="이전 달"
         >
           ◀ 이전
@@ -125,7 +125,7 @@ export function Calendar({
             {year}년 {month + 1}월
           </h3>
           {!loading && (
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
               <span style={{ color: MAGENTA }} className="font-semibold">
                 검토 {monthSummary.pending}
               </span>
@@ -145,7 +145,7 @@ export function Calendar({
         </div>
         <button
           onClick={() => setCursor(new Date(year, month + 1, 1))}
-          className="px-3 py-1 hover:bg-slate-100 rounded text-sm"
+          className="px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-sm"
           aria-label="다음 달"
         >
           다음 ▶
@@ -153,12 +153,12 @@ export function Calendar({
       </div>
 
       {/* Days of week */}
-      <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
+      <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40">
         {['일', '월', '화', '수', '목', '금', '토'].map((d, i) => (
           <div
             key={d}
             className={`px-2 py-2 text-center text-xs font-semibold ${
-              i === 0 ? 'text-rose-600' : i === 6 ? 'text-blue-700' : 'text-slate-700'
+              i === 0 ? 'text-rose-600' : i === 6 ? 'text-blue-700' : 'text-slate-700 dark:text-slate-300'
             }`}
           >
             {d}
@@ -205,14 +205,14 @@ export function Calendar({
             : { color: '#0f172a' };
 
           const baseBgClass = !inMonth
-            ? 'bg-slate-50'
+            ? 'bg-slate-50 dark:bg-slate-900/40'
             : isSelected
             ? ''
             : isToday
             ? ''
             : isClosed
-            ? 'bg-slate-50'
-            : 'bg-white';
+            ? 'bg-slate-50 dark:bg-slate-900/40'
+            : 'bg-white dark:bg-slate-800';
 
           return (
             <button
@@ -222,8 +222,8 @@ export function Calendar({
               style={cellStyle}
               className={`${cellMinH} ${padding} ${baseBgClass} ${
                 !isLastCol ? 'border-r' : ''
-              } ${!isLastRow ? 'border-b' : ''} border-slate-100 text-left transition-colors ${
-                onDateClick && inMonth && !isSelected ? 'cursor-pointer hover:bg-slate-100' : ''
+              } ${!isLastRow ? 'border-b' : ''} border-slate-100 dark:border-slate-700/60 text-left transition-colors ${
+                onDateClick && inMonth && !isSelected ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700' : ''
               } ${!onDateClick ? 'cursor-default' : ''}`}
             >
               <div className="flex items-start justify-between">
@@ -249,7 +249,7 @@ export function Calendar({
                     <div
                       key={r.id}
                       className={`text-[11px] truncate px-1.5 py-0.5 rounded font-medium ${
-                        isSelected ? 'bg-white/20 text-white' : ''
+                        isSelected ? 'bg-white dark:bg-slate-800/20 text-white' : ''
                       }`}
                       style={
                         !isSelected
@@ -263,7 +263,7 @@ export function Calendar({
                     </div>
                   ))}
                   {dayReservations.length > 3 && (
-                    <div className={`text-[10px] ${isSelected ? 'text-white/70' : 'text-slate-500'}`}>
+                    <div className={`text-[10px] ${isSelected ? 'text-white/70' : 'text-slate-500 dark:text-slate-400'}`}>
                       외 {dayReservations.length - 3}건
                     </div>
                   )}
@@ -275,7 +275,7 @@ export function Calendar({
                   {pending > 0 && (
                     <span
                       className={`text-[10px] px-1.5 rounded font-semibold ${
-                        isSelected ? 'bg-white/30 text-white' : ''
+                        isSelected ? 'bg-white dark:bg-slate-800/30 text-white' : ''
                       }`}
                       style={
                         !isSelected ? { background: '#fae8ff', color: '#86198f' } : undefined
@@ -287,7 +287,7 @@ export function Calendar({
                   {confirmed > 0 && (
                     <span
                       className={`text-[10px] px-1.5 rounded font-semibold ${
-                        isSelected ? 'bg-white/30 text-white' : ''
+                        isSelected ? 'bg-white dark:bg-slate-800/30 text-white' : ''
                       }`}
                       style={
                         !isSelected ? { background: '#dbeafe', color: '#1e3a8a' } : undefined
@@ -300,7 +300,7 @@ export function Calendar({
               )}
 
               {meta.blockedDay && inMonth && (
-                <div className={`text-[10px] mt-1 ${isSelected ? 'text-white/70' : 'text-slate-500'}`}>
+                <div className={`text-[10px] mt-1 ${isSelected ? 'text-white/70' : 'text-slate-500 dark:text-slate-400'}`}>
                   · 차단됨
                 </div>
               )}
@@ -311,7 +311,7 @@ export function Calendar({
 
       {/* Legend (large only) */}
       {size === 'large' && (
-        <div className="px-4 py-2.5 border-t border-slate-100 flex gap-4 text-xs text-slate-600 flex-wrap">
+        <div className="px-4 py-2.5 border-t border-slate-100 dark:border-slate-700/60 flex gap-4 text-xs text-slate-600 dark:text-slate-400 flex-wrap">
           <span className="inline-flex items-center gap-1.5">
             <span
               className="inline-block w-3 h-3 rounded-sm border"
