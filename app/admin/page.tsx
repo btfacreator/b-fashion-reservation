@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar } from '@/components/Calendar';
+import { AnalyticsCharts } from '@/components/AnalyticsCharts';
 
 const BLUE = '#1E3A8A';
 const MAGENTA = '#D946EF';
@@ -81,7 +82,7 @@ export default function AdminDashboard() {
   const [filter, setFilter] = useState<Filter>('pending');
   const [dateRange, setDateRange] = useState<DateRange>('all');
   const [search, setSearch] = useState('');
-  const [tab, setTab] = useState<'overview' | 'reservations' | 'blocks' | 'settings'>('overview');
+  const [tab, setTab] = useState<'overview' | 'reservations' | 'blocks' | 'analytics' | 'settings'>('overview');
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Reservation | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -476,41 +477,41 @@ export default function AdminDashboard() {
     <main className="min-h-screen bg-slate-50">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 no-print">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <div className="flex items-center gap-3">
-            <span className="inline-block w-1.5 h-8" style={{ background: MAGENTA }} />
+            <span className="inline-block w-1.5 h-8 flex-shrink-0" style={{ background: MAGENTA }} />
             <div>
               <p className="text-xs text-slate-500 font-medium">부산섬유패션산업연합회</p>
-              <h1 className="text-lg font-bold" style={{ color: BLUE }}>
+              <h1 className="text-base sm:text-lg font-bold" style={{ color: BLUE }}>
                 B.Fashion ShowRoom 관리자
               </h1>
             </div>
           </div>
-          <div className="flex gap-2 flex-wrap justify-end">
+          <div className="flex gap-1.5 sm:gap-2 flex-wrap sm:justify-end">
             <button
               onClick={() => setShowManualModal(true)}
               style={{ background: MAGENTA }}
-              className="px-3 py-2 text-sm text-white rounded hover:opacity-90 transition-opacity"
+              className="flex-1 sm:flex-none px-3 py-2 text-xs sm:text-sm text-white rounded hover:opacity-90 transition-opacity whitespace-nowrap"
             >
               + 직접 등록
             </button>
             <a
               href="/admin/print"
               target="_blank"
-              className="px-3 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50 transition-colors"
+              className="flex-1 sm:flex-none px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded hover:bg-slate-50 transition-colors whitespace-nowrap text-center"
             >
-              오늘 일정 인쇄
+              일정 인쇄
             </a>
             <button
               onClick={() => (window.location.href = '/api/export')}
               style={{ background: BLUE }}
-              className="px-3 py-2 text-sm text-white rounded hover:opacity-90 transition-opacity"
+              className="flex-1 sm:flex-none px-3 py-2 text-xs sm:text-sm text-white rounded hover:opacity-90 transition-opacity whitespace-nowrap"
             >
-              엑셀 다운로드
+              엑셀
             </button>
             <button
               onClick={logout}
-              className="px-3 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50 transition-colors"
+              className="flex-1 sm:flex-none px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded hover:bg-slate-50 transition-colors whitespace-nowrap"
             >
               로그아웃
             </button>
@@ -520,6 +521,7 @@ export default function AdminDashboard() {
           {([
             ['overview', '대시보드'],
             ['reservations', '예약 목록'],
+            ['analytics', '통계'],
             ['blocks', '시간대 차단'],
             ['settings', '설정'],
           ] as const).map(([t, label]) => (
@@ -624,13 +626,20 @@ export default function AdminDashboard() {
                       <div
                         key={r.id}
                         onClick={() => setSelected(r)}
-                        className="bg-white border border-slate-200 rounded p-4 hover:border-blue-900 cursor-pointer transition-colors flex items-center gap-4"
+                        className="bg-white border border-slate-200 rounded p-4 hover:border-blue-900 cursor-pointer transition-colors flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4"
                       >
-                        <div
-                          className="text-2xl font-bold tabular-nums w-20"
-                          style={{ color: BLUE }}
-                        >
-                          {r.visitTime}
+                        <div className="flex items-center justify-between sm:contents">
+                          <div
+                            className="text-2xl font-bold tabular-nums sm:w-20"
+                            style={{ color: BLUE }}
+                          >
+                            {r.visitTime}
+                          </div>
+                          <span
+                            className={`sm:order-last px-2.5 py-1 text-xs rounded font-medium ${s.cls}`}
+                          >
+                            {s.text}
+                          </span>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="font-medium">{r.name}</div>
@@ -641,9 +650,6 @@ export default function AdminDashboard() {
                         <div className="text-sm text-slate-700 whitespace-nowrap">
                           {r.transport === 'car' ? `🚗 ${r.carNumber || ''}` : '🚶 도보'}
                         </div>
-                        <span className={`px-2.5 py-1 text-xs rounded font-medium ${s.cls}`}>
-                          {s.text}
-                        </span>
                       </div>
                     );
                   })}
@@ -835,7 +841,127 @@ export default function AdminDashboard() {
                 조건에 맞는 예약이 없습니다.
               </p>
             ) : (
-              <div className="bg-white border border-slate-200 rounded overflow-x-auto">
+              <>
+              {/* 모바일: 카드 리스트 */}
+              <div className="md:hidden space-y-2">
+                <label className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded text-sm">
+                  <input
+                    type="checkbox"
+                    checked={
+                      filteredReservations.length > 0 &&
+                      selectedIds.size === filteredReservations.length
+                    }
+                    onChange={toggleAllVisible}
+                    aria-label="전체 선택"
+                    className="cursor-pointer"
+                  />
+                  <span className="font-medium">전체 선택</span>
+                </label>
+                {filteredReservations.map((r) => {
+                  const s = statusBadge(r);
+                  const isSel = selectedIds.has(r.id);
+                  return (
+                    <div
+                      key={r.id}
+                      onClick={() => setSelected(r)}
+                      className={`bg-white border rounded p-3 cursor-pointer ${
+                        isSel ? 'border-blue-900 bg-blue-50' : 'border-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          checked={isSel}
+                          onChange={() => toggleId(r.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label="선택"
+                          className="mt-1 cursor-pointer"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="font-bold text-base">{r.name}</span>
+                            <span className={`px-2 py-0.5 text-xs rounded font-medium ${s.cls}`}>
+                              {s.text}
+                            </span>
+                          </div>
+                          <div className="text-sm text-slate-600 mb-1">{r.affiliation}</div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <span style={{ color: BLUE }} className="font-bold tabular-nums">
+                              {r.visitDate.split('T')[0]} {r.visitTime}
+                            </span>
+                          </div>
+                          <div className="text-xs text-slate-500 mt-1">
+                            {r.phone} ·{' '}
+                            {r.transport === 'car' ? `🚗 ${r.carNumber || ''}` : '🚶 도보'}
+                          </div>
+                          {r.memo && (
+                            <div className="text-xs text-slate-600 mt-1 truncate">
+                              📝 {r.memo}
+                            </div>
+                          )}
+                          <div
+                            className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-slate-100"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {r.status === 'pending' && (
+                              <>
+                                <button
+                                  onClick={() => updateStatus(r.id, 'confirmed')}
+                                  style={{ background: BLUE }}
+                                  className="flex-1 px-3 py-1.5 text-white text-xs rounded hover:opacity-90"
+                                >
+                                  승인
+                                </button>
+                                <button
+                                  onClick={() => askCancelReason(r.id, false)}
+                                  className="flex-1 px-3 py-1.5 border border-slate-300 text-xs rounded hover:bg-fuchsia-50"
+                                  style={{ color: MAGENTA }}
+                                >
+                                  거절
+                                </button>
+                              </>
+                            )}
+                            {r.status === 'confirmed' && r.visitOutcome === null && (
+                              <>
+                                <button
+                                  onClick={() => setOutcome(r.id, 'visited')}
+                                  className="flex-1 px-3 py-1.5 bg-emerald-600 text-white text-xs rounded"
+                                >
+                                  방문
+                                </button>
+                                <button
+                                  onClick={() => setOutcome(r.id, 'no_show')}
+                                  className="flex-1 px-3 py-1.5 bg-slate-700 text-white text-xs rounded"
+                                >
+                                  노쇼
+                                </button>
+                                <button
+                                  onClick={() => askCancelReason(r.id, true)}
+                                  className="flex-1 px-3 py-1.5 border border-slate-300 text-xs rounded"
+                                  style={{ color: MAGENTA }}
+                                >
+                                  취소
+                                </button>
+                              </>
+                            )}
+                            {r.status === 'confirmed' && r.visitOutcome !== null && (
+                              <button
+                                onClick={() => setOutcome(r.id, null)}
+                                className="text-slate-500 text-xs hover:underline"
+                              >
+                                결과 초기화
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 데스크탑: 테이블 */}
+              <div className="hidden md:block bg-white border border-slate-200 rounded overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-slate-50 border-b border-slate-200">
                     <tr className="text-left text-slate-700 font-medium">
@@ -963,6 +1089,7 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
+              </>
             )}
           </div>
         )}
@@ -1077,6 +1204,21 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* ANALYTICS TAB */}
+        {tab === 'analytics' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-1" style={{ color: BLUE }}>
+                통계
+              </h2>
+              <p className="text-sm text-slate-500">
+                예약 데이터를 시각화해 운영 인사이트를 확인할 수 있습니다.
+              </p>
+            </div>
+            <AnalyticsCharts />
           </div>
         )}
 

@@ -268,12 +268,14 @@ export default function ReservationForm() {
                   onClick={() => setForm({ ...form, transport: 'walk', carNumber: '' })}
                   icon={<WalkIcon />}
                   title="도보 방문"
+                  subtitle=""
                 />
                 <TransportOption
                   selected={form.transport === 'car'}
                   onClick={() => setForm({ ...form, transport: 'car' })}
                   icon={<CarIcon />}
-                  title="차량 방문 (주차 신청)"
+                  title="차량 방문"
+                  subtitle="주차 신청"
                 />
               </div>
               {form.transport === 'car' && (
@@ -424,18 +426,20 @@ function TransportOption({
   onClick,
   icon,
   title,
+  subtitle,
 }: {
   selected: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   title: string;
+  subtitle?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       style={selected ? { background: BLUE, borderColor: BLUE, color: '#fff' } : undefined}
-      className={`group relative py-6 px-4 border-2 rounded transition-all ${
+      className={`group relative py-6 px-3 sm:px-4 border-2 rounded transition-all ${
         selected
           ? ''
           : 'border-slate-300 bg-white text-slate-900 hover:border-blue-900 hover:shadow-sm'
@@ -443,7 +447,17 @@ function TransportOption({
     >
       <div className="flex flex-col items-center gap-3">
         <div className="transition-transform group-hover:scale-105">{icon}</div>
-        <div className="text-base font-bold text-center">{title}</div>
+        <div className="text-center">
+          <div className="text-base font-bold whitespace-nowrap">{title}</div>
+          {subtitle && (
+            <div
+              className="text-xs mt-1 whitespace-nowrap"
+              style={selected ? { color: '#fbcfe8' } : { color: MAGENTA }}
+            >
+              ({subtitle})
+            </div>
+          )}
+        </div>
       </div>
     </button>
   );
