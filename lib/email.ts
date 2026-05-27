@@ -99,35 +99,6 @@ async function send(opts: { to: string; subject: string; html: string }): Promis
   }
 }
 
-/** 신청자에게: 신청이 접수되었음을 안내 (확정 아님) */
-export async function sendSubmissionAck(data: ReservationData): Promise<void> {
-  const html = `
-    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#0f172a;">
-      <h2 style="margin:0 0 16px;color:#1e3a8a;">예약 신청이 접수되었습니다</h2>
-      <p>안녕하세요 <strong>${escape(data.name)}</strong>님,</p>
-      <p>${escape(SITE_NAME)} 방문 예약 신청이 정상적으로 접수되었습니다.<br>
-      <strong style="color:#1e3a8a;">관리자 검토 후 확정 메일</strong>이 별도로 발송될 예정입니다.</p>
-      <table style="width:100%;border-collapse:collapse;margin:20px 0;font-size:14px;">
-        ${row('신청 번호', escape(data.id))}
-        ${row('이름', escape(data.name))}
-        ${row('소속', escape(data.affiliation))}
-        ${row('방문 일자', formatDate(data.visitDate))}
-        ${row('방문 시간', formatTimeLabel(data.visitTime))}
-        ${row('이동수단', transportLabel(data.transport, data.carNumber))}
-      </table>
-      <div style="background:#fef3c7;border-left:3px solid #f59e0b;padding:12px;font-size:13px;color:#78350f;">
-        ⓘ 본 메일은 신청 접수 안내이며, <strong>확정 메일을 받으셔야 예약이 완료됩니다.</strong>
-      </div>
-      ${contactBlock()}
-    </div>
-  `;
-  await send({
-    to: data.email,
-    subject: `[${SITE_NAME}] 예약 신청 접수 안내`,
-    html,
-  });
-}
-
 /** 관리자에게: 신규 신청 알림 */
 export async function sendAdminNotification(data: ReservationData): Promise<void> {
   if (!ADMIN_EMAIL) return;
