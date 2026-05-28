@@ -39,12 +39,15 @@ export async function GET() {
     '관리자 메모': r.memo || '',
     '신청 시각': r.createdAt.toISOString().replace('T', ' ').replace(/\..+/, ''),
     '승인 시각': r.approvedAt ? r.approvedAt.toISOString().replace('T', ' ').replace(/\..+/, '') : '',
+    '개인정보 동의 시각': r.privacyConsentAt
+      ? r.privacyConsentAt.toISOString().replace('T', ' ').replace(/\..+/, '')
+      : '',
   }));
 
   const ws = XLSX.utils.json_to_sheet(rows);
   ws['!cols'] = [
     { wch: 28 }, { wch: 8 }, { wch: 10 }, { wch: 10 }, { wch: 14 }, { wch: 18 }, { wch: 28 },
-    { wch: 12 }, { wch: 10 }, { wch: 8 }, { wch: 14 }, { wch: 30 }, { wch: 24 }, { wch: 20 }, { wch: 20 },
+    { wch: 12 }, { wch: 10 }, { wch: 8 }, { wch: 14 }, { wch: 30 }, { wch: 24 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
   ];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, '예약 목록');

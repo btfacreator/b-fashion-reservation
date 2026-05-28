@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
           memo: data.memo || null,
           status: 'confirmed',
           approvedAt: new Date(),
+          privacyConsentAt: new Date(),
         },
       });
     });
