@@ -6,11 +6,19 @@ const MAGENTA = '#D946EF';
 
 const ORG = '부산섬유패션산업연합회';
 const SERVICE = 'B.Fashion ShowRoom 방문 예약 시스템';
-const OFFICER = 'B.Fashion ShowRoom 담당자';
-const PHONE = '070-4820-3414';
-const EMAIL = 'ksmin3874@fabiz.ktbizoffice.com';
 const ADDRESS = '부산광역시 동구 망양로 978, 1층';
 const EFFECTIVE_DATE = '2026년 5월 27일';
+
+// 개인정보 보호책임자
+const OFFICER_NAME = '이희진 팀장';
+const OFFICER_DEPT = '사업단 패션테크팀';
+const OFFICER_PHONE = '070-4820-3728';
+const OFFICER_EMAIL = 'jinnie44@fabiz.ktbizoffice.com';
+
+// 개인정보 담당자 (실무)
+const HANDLER_NAME = '김수민 주임';
+const HANDLER_PHONE = '070-4820-3414';
+const HANDLER_EMAIL = 'ksmin3874@fabiz.ktbizoffice.com';
 
 export const metadata: Metadata = {
   title: '개인정보처리방침',
@@ -150,16 +158,25 @@ export default function PrivacyPage() {
             </ul>
           </Section>
 
-          <Section title="제9조 (개인정보 보호책임자)">
-            <div className="border border-slate-200 rounded p-4 bg-slate-50">
-              <p>▪ 보호책임자: {OFFICER}</p>
-              <p>▪ 소속: {ORG}</p>
-              <p>▪ 연락처: {PHONE}</p>
-              <p>▪ 이메일: {EMAIL}</p>
-              <p>▪ 주소: {ADDRESS}</p>
+          <Section title="제9조 (개인정보 보호책임자 및 담당자)">
+            <p>연합회는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 정보주체의 문의·불만 및 피해구제 등을 처리하기 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.</p>
+            <div className="mt-3 border border-slate-200 rounded p-4 bg-slate-50">
+              <p className="font-semibold mb-1" style={{ color: BLUE }}>▶ 개인정보 보호책임자</p>
+              <p>▪ 성명/직책: {OFFICER_NAME}</p>
+              <p>▪ 소속: {ORG} {OFFICER_DEPT}</p>
+              <p>▪ 연락처: {OFFICER_PHONE}</p>
+              <p>▪ 이메일: {OFFICER_EMAIL}</p>
             </div>
+            <div className="mt-3 border border-slate-200 rounded p-4 bg-slate-50">
+              <p className="font-semibold mb-1" style={{ color: BLUE }}>▶ 개인정보 담당자 (실무)</p>
+              <p>▪ 성명/직책: {HANDLER_NAME}</p>
+              <p>▪ 소속: {ORG}</p>
+              <p>▪ 연락처: {HANDLER_PHONE}</p>
+              <p>▪ 이메일: {HANDLER_EMAIL}</p>
+            </div>
+            <p className="mt-3">▪ 주소: {ADDRESS}</p>
             <p className="mt-2 text-xs text-slate-500">
-              정보주체는 개인정보 보호 관련 문의·불만·피해구제를 보호책임자에게 요청할 수 있습니다.
+              정보주체는 개인정보 보호 관련 문의·불만·피해구제를 보호책임자 또는 담당자에게 요청할 수 있으며, 연합회는 지체 없이 답변 및 처리합니다.
             </p>
           </Section>
 
