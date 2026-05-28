@@ -6,6 +6,7 @@ import { isClosedDay, parseDateString } from '@/lib/holidays';
 import { sendAdminNotification } from '@/lib/email';
 import { isAuthenticated } from '@/lib/auth';
 import { getBookingWindow, addDaysUTC } from '@/lib/settings';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
 
 const createSchema = z.object({
   name: z.string().min(1).max(100),
@@ -22,6 +23,16 @@ const createSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    // 레이트 리미트: IP당 10분에 5회 제출
+    const ip = getClientIp(req);
+    const limited = rateLimit(`reserve:${ip}`, 5, 10 * 60 * 1000);
+    if (!limited.ok) {
+      return NextResponse.json(
+        { error: '예약 신청이 너무 잦습니다. 잠시 후 다시 시도해 주세요.' },
+        { status: 429, headers: { 'Retry-After': String(limited.retryAfter) } },
+      );
+    }
+
     const body = await req.json();
     const data = createSchema.parse(body);
 

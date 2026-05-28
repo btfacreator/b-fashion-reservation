@@ -139,13 +139,20 @@ export default async function SuccessPage({
             </div>
           </div>
 
-          <div>
+          <div className="flex gap-2 justify-center">
             <Link
               href="/"
               style={{ background: BLUE }}
-              className="inline-block text-white px-8 py-3 text-sm font-bold rounded hover:opacity-90 transition-opacity"
+              className="inline-block text-white px-6 py-3 text-sm font-bold rounded hover:opacity-90 transition-opacity"
             >
               홈으로 돌아가기
+            </Link>
+            <Link
+              href="/lookup"
+              className="inline-block border border-slate-300 px-6 py-3 text-sm font-bold rounded hover:bg-slate-50 transition-colors"
+              style={{ color: BLUE }}
+            >
+              예약 조회
             </Link>
           </div>
         </div>

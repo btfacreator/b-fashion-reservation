@@ -119,6 +119,9 @@ export default function ReservationForm() {
               </h1>
             </div>
           </div>
+          <Link href="/lookup" className="text-sm font-medium hover:underline whitespace-nowrap" style={{ color: BLUE }}>
+            예약 조회
+          </Link>
         </div>
       </header>
 
