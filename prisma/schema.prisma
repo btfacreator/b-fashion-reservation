@@ -18,12 +18,13 @@ model Reservation {
   request      String?
   transport    String    @default("walk")
   carNumber    String?
-  status       String    @default("pending")
-  visitOutcome String?   // null | "visited" | "no_show"
-  approvedAt   DateTime?
-  memo         String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  status           String    @default("pending")
+  visitOutcome     String?   // null | "visited" | "no_show"
+  approvedAt       DateTime?
+  memo             String?
+  privacyConsentAt DateTime? // 개인정보 수집·이용 동의 시각
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   @@index([visitDate])
   @@index([status])

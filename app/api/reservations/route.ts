@@ -17,6 +17,7 @@ const createSchema = z.object({
   transport: z.enum(['walk', 'car']),
   carNumber: z.string().max(30).optional().nullable(),
   request: z.string().max(2000).optional().nullable(),
+  privacyConsent: z.boolean(),
 });
 
 export async function POST(req: NextRequest) {
@@ -30,6 +31,13 @@ export async function POST(req: NextRequest) {
 
     if (data.transport === 'car' && !data.carNumber?.trim()) {
       return NextResponse.json({ error: '차량번호를 입력해 주세요.' }, { status: 400 });
+    }
+
+    if (!data.privacyConsent) {
+      return NextResponse.json(
+        { error: '개인정보 수집·이용에 동의해야 예약이 가능합니다.' },
+        { status: 400 },
+      );
     }
 
     const visitDate = parseDateString(data.visitDate);
@@ -91,6 +99,7 @@ export async function POST(req: NextRequest) {
           transport: data.transport,
           carNumber: data.transport === 'car' ? (data.carNumber || null) : null,
           request: data.request || null,
+          privacyConsentAt: new Date(),
         },
       });
     });

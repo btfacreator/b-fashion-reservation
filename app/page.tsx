@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const TIME_SLOTS = [
   { value: '10:00', label: '오전 10:00' },
@@ -40,6 +41,7 @@ export default function ReservationForm() {
   const [bookingWindow, setBookingWindow] = useState<{ minDate: string; maxDate: string } | null>(
     null,
   );
+  const [privacyConsent, setPrivacyConsent] = useState(false);
 
   useEffect(() => {
     fetch('/api/booking-window')
@@ -73,12 +75,16 @@ export default function ReservationForm() {
       setError('차량번호를 입력해 주세요.');
       return;
     }
+    if (!privacyConsent) {
+      setError('개인정보 수집·이용에 동의해 주세요.');
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await fetch('/api/reservations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, privacyConsent }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '예약에 실패했습니다.');
@@ -96,6 +102,7 @@ export default function ReservationForm() {
     form.visitTime &&
     form.transport &&
     (form.transport !== 'car' || form.carNumber.trim()) &&
+    privacyConsent &&
     !dateInfo?.closed;
 
   return (
@@ -314,6 +321,52 @@ export default function ReservationForm() {
             />
           </Section>
 
+          {/* 개인정보 수집·이용 동의 */}
+          <section>
+            <div className="border border-slate-300 rounded-lg p-5 bg-slate-50">
+              <h3 className="text-sm font-bold text-slate-900 mb-3">
+                개인정보 수집·이용 동의
+                <span className="ml-1" style={{ color: MAGENTA }}>
+                  *
+                </span>
+              </h3>
+              <div className="text-xs text-slate-600 leading-relaxed space-y-1 mb-4 bg-white border border-slate-200 rounded p-3">
+                <p>
+                  <strong>· 수집 항목:</strong> 이름, 전화번호, 이메일, 소속, 차량번호(차량 이용 시)
+                </p>
+                <p>
+                  <strong>· 수집·이용 목적:</strong> 방문 예약 접수·확인 및 안내 연락
+                </p>
+                <p>
+                  <strong>· 보유·이용 기간:</strong> 방문 예정일로부터 1년 후 파기
+                </p>
+                <p className="text-slate-500">
+                  · 동의를 거부할 권리가 있으며, 거부 시 예약 신청이 제한됩니다.
+                </p>
+              </div>
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={privacyConsent}
+                  onChange={(e) => setPrivacyConsent(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 cursor-pointer flex-shrink-0"
+                  required
+                />
+                <span className="text-sm text-slate-900">
+                  위 개인정보 수집·이용에 동의합니다.{' '}
+                  <Link
+                    href="/privacy"
+                    target="_blank"
+                    className="underline font-medium"
+                    style={{ color: BLUE }}
+                  >
+                    개인정보처리방침 보기
+                  </Link>
+                </span>
+              </label>
+            </div>
+          </section>
+
           {error && (
             <div
               className="border-2 px-4 py-3 text-sm font-medium rounded"
@@ -370,6 +423,11 @@ export default function ReservationForm() {
                 ✉ <a href={`mailto:${CONTACT_EMAIL}`} className="font-medium" style={{ color: BLUE }}>{CONTACT_EMAIL}</a>
               </p>
             </div>
+          </div>
+          <div className="mt-6 pt-4 border-t border-slate-200">
+            <Link href="/privacy" className="text-sm font-medium hover:underline" style={{ color: BLUE }}>
+              개인정보처리방침
+            </Link>
           </div>
         </div>
       </footer>
