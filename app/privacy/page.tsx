@@ -170,7 +170,7 @@ export default function PrivacyPage() {
             <div className="mt-3 border border-slate-200 rounded p-4 bg-slate-50">
               <p className="font-semibold mb-1" style={{ color: BLUE }}>▶ 개인정보 담당자 (실무)</p>
               <p>▪ 성명/직책: {HANDLER_NAME}</p>
-              <p>▪ 소속: {ORG}</p>
+              <p>▪ 소속: {ORG} {OFFICER_DEPT}</p>
               <p>▪ 연락처: {HANDLER_PHONE}</p>
               <p>▪ 이메일: {HANDLER_EMAIL}</p>
             </div>
