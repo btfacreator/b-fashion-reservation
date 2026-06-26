@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar } from '@/components/Calendar';
 import { AnalyticsCharts } from '@/components/AnalyticsCharts';
+import { NotificationBell } from '@/components/NotificationBell';
 
 const BLUE = '#1E3A8A';
 const MAGENTA = '#D946EF';
@@ -498,16 +499,40 @@ export default function AdminDashboard() {
       {/* Header */}
       <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 no-print">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-          <div className="flex items-center gap-3">
-            <span className="inline-block w-1.5 h-8 flex-shrink-0" style={{ background: MAGENTA }} />
-            <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">부산섬유패션산업연합회</p>
-              <h1 className="text-base sm:text-lg font-bold" style={{ color: BLUE }}>
-                B.Fashion ShowRoom 관리자
-              </h1>
+          <div className="flex items-center gap-3 justify-between sm:justify-start">
+            <div className="flex items-center gap-3">
+              <span className="inline-block w-1.5 h-8 flex-shrink-0" style={{ background: MAGENTA }} />
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">부산섬유패션산업연합회</p>
+                <h1 className="text-base sm:text-lg font-bold" style={{ color: BLUE }}>
+                  B.Fashion ShowRoom 관리자
+                </h1>
+              </div>
+            </div>
+            {/* 모바일: 종을 브랜드 줄 우측에 표시 */}
+            <div className="sm:hidden">
+              <NotificationBell
+                onNavigate={() => {
+                  setTab('reservations');
+                  setFilter('pending');
+                  setDateRange('all');
+                  setSelectedDate(null);
+                }}
+              />
             </div>
           </div>
-          <div className="flex gap-1.5 sm:gap-2 flex-wrap sm:justify-end">
+          <div className="flex gap-1.5 sm:gap-2 flex-wrap sm:justify-end items-center">
+            {/* 데스크탑: 종을 버튼 그룹 좌측에 표시 */}
+            <div className="hidden sm:block">
+              <NotificationBell
+                onNavigate={() => {
+                  setTab('reservations');
+                  setFilter('pending');
+                  setDateRange('all');
+                  setSelectedDate(null);
+                }}
+              />
+            </div>
             <button
               onClick={() => setShowManualModal(true)}
               style={{ background: MAGENTA }}

@@ -7,6 +7,7 @@ import { sendAdminNotification } from '@/lib/email';
 import { isAuthenticated } from '@/lib/auth';
 import { getBookingWindow, addDaysUTC } from '@/lib/settings';
 import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { notifyNewReservation } from '@/lib/notifications';
 
 const createSchema = z.object({
   name: z.string().min(1).max(100),
@@ -118,6 +119,10 @@ export async function POST(req: NextRequest) {
     // 신청 접수 시 관리자에게만 알림. 신청자는 승인/취소 시점에 메일 받음
     sendAdminNotification(reservation).catch((err) =>
       console.error('[reservations] admin notification failed:', err),
+    );
+    // 관리자 페이지 알림 센터에 기록
+    notifyNewReservation(reservation).catch((err) =>
+      console.error('[reservations] notification log failed:', err),
     );
 
     return NextResponse.json({ id: reservation.id });

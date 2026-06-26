@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { rateLimit, getClientIp } from '@/lib/rate-limit';
 import { sendCancellationNotice, sendUserCancellationAlert } from '@/lib/email';
+import { notifyUserCancellation } from '@/lib/notifications';
 
 const schema = z.object({
   id: z.string().min(1),
@@ -69,6 +70,7 @@ export async function POST(req: NextRequest) {
     Promise.allSettled([
       sendCancellationNotice(updated, wasConfirmed, '신청자 본인 요청에 의한 취소'),
       sendUserCancellationAlert(updated),
+      notifyUserCancellation(updated),
     ]).catch(() => {});
 
     return NextResponse.json({ ok: true });
