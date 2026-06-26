@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
       where: { name: name.trim() },
       orderBy: { visitDate: 'desc' },
       select: {
+        id: true,
         visitDate: true,
         visitTime: true,
         status: true,
@@ -47,6 +48,7 @@ export async function POST(req: NextRequest) {
     const matched = candidates
       .filter((r) => normalizePhone(r.phone) === phoneDigits)
       .map((r) => ({
+        id: r.id,
         visitDate: r.visitDate.toISOString().split('T')[0],
         visitTime: r.visitTime,
         status: r.status,

@@ -10,6 +10,7 @@ const CONTACT_PHONE = '070-4820-3414';
 const CONTACT_EMAIL = 'ksmin3874@fabiz.ktbizoffice.com';
 
 interface LookupResult {
+  id: string;
   visitDate: string;
   visitTime: string;
   status: string;
@@ -50,6 +51,44 @@ export default function LookupPage() {
   const [results, setResults] = useState<LookupResult[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cancelingId, setCancelingId] = useState<string | null>(null);
+
+  async function runLookup() {
+    const res = await fetch('/api/lookup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, phone }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || '조회에 실패했습니다.');
+    setResults(data.reservations || []);
+  }
+
+  async function onCancel(id: string) {
+    if (
+      !confirm(
+        '이 예약을 취소하시겠습니까?\n취소 후에는 되돌릴 수 없으며, 재방문을 원하시면 다시 신청하셔야 합니다.',
+      )
+    )
+      return;
+    setError(null);
+    setCancelingId(id);
+    try {
+      const res = await fetch('/api/lookup/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name, phone }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '취소에 실패했습니다.');
+      // 취소 후 목록 갱신
+      await runLookup();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '취소에 실패했습니다.');
+    } finally {
+      setCancelingId(null);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -57,14 +96,7 @@ export default function LookupPage() {
     setResults(null);
     setLoading(true);
     try {
-      const res = await fetch('/api/lookup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || '조회에 실패했습니다.');
-      setResults(data.reservations || []);
+      await runLookup();
     } catch (err) {
       setError(err instanceof Error ? err.message : '조회에 실패했습니다.');
     } finally {
@@ -186,6 +218,21 @@ export default function LookupPage() {
                           </div>
                         )}
                       </div>
+
+                      {/* 본인 취소 버튼 — 검토중/확정(방문 전)만 */}
+                      {(r.status === 'pending' ||
+                        (r.status === 'confirmed' && !r.visitOutcome)) && (
+                        <div className="mt-4 pt-3 border-t border-slate-100">
+                          <button
+                            onClick={() => onCancel(r.id)}
+                            disabled={cancelingId === r.id}
+                            className="w-full py-2.5 text-sm font-bold rounded border transition-colors disabled:opacity-50"
+                            style={{ borderColor: MAGENTA, color: MAGENTA }}
+                          >
+                            {cancelingId === r.id ? '취소 처리 중...' : '예약 취소하기'}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   );
                 })}

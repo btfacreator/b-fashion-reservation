@@ -252,3 +252,28 @@ export async function sendCancellationNotice(
     html,
   });
 }
+
+/** 관리자에게: 사용자 본인이 예약을 취소했음을 알림 */
+export async function sendUserCancellationAlert(data: ReservationData): Promise<void> {
+  if (!ADMIN_EMAIL) return;
+
+  const html = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#0f172a;">
+      <h2 style="margin:0 0 16px;color:#1e3a8a;">신청자 본인 취소 안내</h2>
+      <p>아래 예약이 <strong>신청자 본인</strong>에 의해 취소되었습니다. 해당 시간대가 다시 예약 가능 상태가 됩니다.</p>
+      <table style="width:100%;border-collapse:collapse;margin:20px 0;font-size:14px;">
+        ${row('이름', escape(data.name))}
+        ${row('전화번호', escape(data.phone))}
+        ${row('소속', escape(data.affiliation))}
+        ${row('방문 일자', formatDate(data.visitDate))}
+        ${row('방문 시간', formatTimeLabel(data.visitTime))}
+        ${row('이동수단', transportLabel(data.transport, data.carNumber))}
+      </table>
+    </div>
+  `;
+  await send({
+    to: ADMIN_EMAIL,
+    subject: `[${SITE_NAME}] 신청자 본인 취소: ${data.name} (${formatDate(data.visitDate)} ${formatTimeLabel(data.visitTime)})`,
+    html,
+  });
+}
